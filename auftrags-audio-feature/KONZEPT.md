@@ -3,16 +3,14 @@
 **Projekt:** Blitzschutz Reichenhauser  
 **Feature:** Audio-Aufnahme pro Baustelle → automatische Auftragserfassung  
 **Datum:** 2026-04-13  
-**Status:** Konzeptphase 🚧
+**Status:** Konzept finalisiert ✅ — bereit zur Implementierung
 
 ---
 
 ## Idee (Zusammenfassung)
 
 Zu jeder Baustelle im Frontend gibt es einen 🎙️-Button.  
-Ein Vorarbeiter drückt drauf, spricht einen Auftrag ein → das System transkribiert die Aufnahme und extrahiert automatisch die relevanten Auftragsdaten.
-
-Am Ende entsteht eine **Pre-Filled URL** fürs Back-Office — analog zu den bestehenden **Phone Requests**.
+Ein Vorarbeiter drückt drauf, spricht einen Auftrag ein → das System transkribiert die Aufnahme, extrahiert via LLM die relevanten Auftragsdaten und erstellt einen **Voice Request** mit Pre-Filled MS Forms URL — analog zu den bestehenden **Phone Requests** vom vapi.ai-Telefonagenten.
 
 ---
 
@@ -21,22 +19,23 @@ Am Ende entsteht eine **Pre-Filled URL** fürs Back-Office — analog zu den bes
 ```
 [Frontend – Vorarbeiter-App]
   └── 🎙️ Mikrofon-Button pro Baustelle
-      └── Web Audio API → MediaRecorder (WebM/Opus)
-          └── POST /api/voice-requests
-                ├── audio: File (WebM/Opus, max 2 min)
-                └── constructionSiteId: string (UUID)
+      └── MediaRecorder → WebM/Opus Blob (max 2 min)
+          └── POST /api/v1/voice-requests
+                ├── audio:              File (WebM/Opus)
+                └── constructionSiteId: number
 
 [Backend – Middleware]
-  └── POST /api/voice-requests
-      ├── 1. Validierung (Größe, Format)
-      ├── 2. Audio → Transcription Service (self-hosted Whisper)
+  └── POST /api/v1/voice-requests  (Bearer Token Auth, wie alle anderen Endpoints)
+      ├── 1. Validierung (constructionSiteId existiert, Dateigröße ≤ 5 MB)
+      ├── 2. Audio → self-hosted Whisper API (speaches, intern: localhost:9000)
       ├── 3. Transkript + Baustellen-Kontext → LLM → MicrosoftProject-Felder
-      └── 4. Generic Request erstellen → Pre-Filled MS Forms URL
+      ├── 4. voice_requests-Eintrag in DB speichern (inkl. transcript, extracted_data)
+      └── 5. buildMSFormsUrl() → predefined_url
           └── Response: { requestId, status: "ok" }
-              ← Frontend zeigt nur ✅ (Backend verarbeitet weiter)
 
 [Back-Office]
-  └── Sieht neue "Voice Requests" in der Liste
+  └── Sieht neue Voice Requests in der Liste (neben Phone Requests)
+      ├── Transkript sichtbar (für Debugging)
       └── Öffnet Pre-Filled URL → MS Forms vorausgefüllt
 ```
 
@@ -48,18 +47,21 @@ Am Ende entsteht eine **Pre-Filled URL** fürs Back-Office — analog zu den bes
 
 - Mikrofon-Icon-Button zu jeder Baustellen-Karte
 - **Aufnahme-Flow:**
-  1. Button drücken → Aufnahme startet (visuelles Feedback: pulsierendes Icon + Timer)
-  2. Max-Länge erreicht (120s) oder Button erneut drücken → Aufnahme stoppt
-  3. Audio-Blob wird als `multipart/form-data` + `constructionSiteId` ans Backend geschickt
-  4. Frontend zeigt **✅ grünes Häkchen** sobald Backend `200 OK` zurückgibt
-  5. Fertig — die Auswertung passiert im Back-Office
+  1. Button drücken → Aufnahme startet (`MediaRecorder` API, WebM/Opus)
+  2. Visuelles Feedback: pulsierendes Icon + Timer (MM:SS)
+  3. Stop: Button erneut drücken **oder** automatisch nach 120s
+  4. `multipart/form-data` POST ans Backend:
+     - `audio`: Blob (WebM/Opus)
+     - `constructionSiteId`: ID der Baustelle
+  5. **✅ Grünes Häkchen** bei `200 OK` — fertig, keine Vorschau nötig
 
-### Kein Preview nötig
-Der Vorarbeiter sieht nur das Häkchen. Die inhaltliche Auswertung des Transkripts findet im Back-Office statt (andere Accounts).
+### Permissions
+- Browser fragt automatisch nach Mikrofon-Erlaubnis (`getUserMedia`)
+- Fehlerfall (Permission denied, kein Mikrofon) → klare Fehlermeldung anzeigen
 
 ### Audio-Format
-- **WebM/Opus** (Browser-Default von `MediaRecorder`) — kein Konvertierungsschritt nötig
-- Max-Länge: **2 Minuten** (120s), wird per Timer im Frontend durchgesetzt
+- **WebM/Opus** — Browser-Default, kein Konvertierungsschritt nötig
+- Max-Länge: **120 Sekunden** (Frontend-Timer + auto-stop)
 
 ---
 
@@ -68,111 +70,128 @@ Der Vorarbeiter sieht nur das Häkchen. Die inhaltliche Auswertung des Transkrip
 ### Neuer Endpoint
 
 ```
-POST /api/voice-requests
+POST /api/v1/voice-requests
+Authorization: Bearer <API_TOKEN>
 Content-Type: multipart/form-data
 
 Fields:
-  - audio:              binary  (WebM/Opus, max ~5MB)
-  - constructionSiteId: string  (UUID der Baustelle)
+  - audio:              binary  (WebM/Opus, max 5 MB)
+  - constructionSiteId: number
 ```
 
-**Response (sofort):**
+**Response (sofort nach DB-Eintrag):**
 ```json
-{ "requestId": 42, "status": "ok" }
+{ "success": true, "data": { "requestId": 42, "status": "ok" } }
 ```
 
 ### Verarbeitungs-Pipeline
 
+```typescript
+// 1. Validierung
+const site = await getConstructionSiteById(constructionSiteId);
+if (!site) throw new Error('Baustelle nicht gefunden');
+if (audioFile.size > 5_000_000) throw new Error('Audio zu groß (max 5 MB)');
+
+// 2. Transkription (self-hosted Whisper, OpenAI-kompatibler Endpoint)
+const transcript = await transcribeAudio(audioFile);  // POST http://localhost:9000/v1/audio/transcriptions
+
+// 3. LLM-Extraktion
+const extracted = await extractProjectData(transcript, site);  // GPT-4o-mini oder claude-haiku
+
+// 4. MS Forms URL
+const predefinedUrl = buildMSFormsUrl({
+  betreff: extracted.betreff || 'Voice-Auftrag',
+  baustelle: site.folder_name,
+  pruefer: employeeName,  // aus eingeloggtem User
+});
+
+// 5. DB speichern
+await createVoiceRequest({ constructionSiteId, transcript, extracted, predefinedUrl, employeeId });
 ```
-1. Validierung
-   ├── constructionSiteId vorhanden & existiert
-   ├── audio-File vorhanden, max 5MB
-   └── Format-Check (Content-Type)
 
-2. Transkription
-   └── POST http://localhost:9000/v1/audio/transcriptions
-       ├── file: audio.webm
-       ├── model: whisper-large-v3
-       └── language: de
+### Authentifizierung / User-Mapping
+- Wie alle anderen Endpoints: `Bearer <API_TOKEN>` via `authenticateApiToken` Middleware
+- **Employee-Mapping:** Der eingeloggte User soll als `employee_id` gespeichert werden  
+  → Das Frontend muss beim Request den `employeeId` mitschicken (oder der Token wird dem Employee zugeordnet — abhängig vom bestehenden Auth-System)
 
-3. Extraktion (LLM)
-   ├── Prompt: Transkript + Baustellen-Info → JSON mit MicrosoftProject-Feldern
-   └── Output: Partial<MicrosoftProject>
-
-4. Voice Request erstellen (analog zu Phone Requests)
-   ├── DB-Eintrag: voice_requests-Tabelle
-   └── predefined_url via buildMSFormsUrl()
-```
-
-### Refactoring: GenericRequest
-
-Die bestehende Phone-Request-Logik wird auf **Generic Requests** verallgemeinert:
+### Refactoring: PhoneRequest → GenericRequest
+Die `phoneRequestService.ts`-Logik wird auf eine gemeinsame Basis gehoben:
 
 ```typescript
-type RequestSource = 'phone' | 'voice';  // erweiterbar
+// src/services/requestService.ts (neu)
+type RequestSource = 'phone' | 'voice';
 
-interface GenericRequest {
+interface CreateRequestParams {
   source: RequestSource;
-  construction_site_id?: number;  // neu: bei Voice immer vorhanden
-  // ... bestehende PhoneRequest-Felder
+  constructionSiteId?: number;  // pflicht bei voice
+  callerPhone?: string;         // bei phone
+  employeeId?: number;          // bei voice
+  betreff?: string;
+  adresse?: string;
+  ort?: string;
+  ansprechpartnerVorOrt?: string;
+  notizen?: string;
+  transcript?: string;          // bei voice
+  extractedData?: object;       // bei voice
 }
 ```
 
-`phoneRequestService.ts` → `requestService.ts` (oder `createRequest(source, params)`)
-
 ---
 
-## Extraktions-Felder (aus `MicrosoftProject`)
+## LLM-Extraktion
 
-Alle Felder werden per LLM aus dem Transkript extrahiert — soweit erkennbar:
+### Modell
+- **GPT-4o-mini** (OpenAI) oder **claude-haiku** (Anthropic) — beide ausreichend für strukturierte Extraktion
+- Empfehlung: `gpt-4o-mini` — günstiger, schneller, gut für DE-Text
+
+### Extrahierbare Felder (aus `MicrosoftProject` Interface)
 
 | Feld | Typ | Beschreibung |
 |------|-----|--------------|
-| `betreff` | string | Worum geht's (z.B. "Neue Erdung") |
+| `betreff` | string | Was ist zu tun? (z.B. "Neue Erdung") |
 | `gebäudeteil` | string | Welcher Teil des Gebäudes |
 | `terminNachVereinbarung` | boolean | Termin noch offen? |
 | `isPlanVorhanden` | boolean | Ist ein Plan vorhanden? |
 | `ansprechpartnerAuftraggeber` | string | Kontaktperson Auftraggeber |
-| `telefonAnsprechpartner` | string | Telefon Ansprechpartner |
+| `telefonAnsprechpartner` | string | Telefonnummer Ansprechpartner |
 | `ansprechpartnerVorOrt` | string | Wer ist vor Ort |
 | `notiz` | string | Sonstiges / Freitext |
 | `dringlichkeit` | boolean | Dringend? |
 | `leiterNotwendig` | boolean | Braucht man eine Leiter? |
 | `zutritt` | string | Wie kommt man rein? |
 
-**Nicht per Voice erfassbar** (werden aus Kontext/System befüllt):
-- `datum` → automatisch (heute)
-- `name`, `tel` → aus Baustellen-Daten
-- `prüfer` → aus eingeloggtem User
-- `auftragsdatum` → automatisch
-- `straßeKoordinaten` → aus Baustellen-Adresse
-- `wetter` → optional, kann weggelassen werden
+**Automatisch befüllt (nicht vom LLM):**
+- `datum` → heute
+- `auftragsdatum` → heute  
+- `name`, `straßeKoordinaten` → aus `ConstructionSite`
+- `prüfer` → aus eingeloggtem Employee
 
-### LLM-Prompt (Entwurf)
+### LLM-Prompt
 
 ```
 Du bist ein Assistent für das Elektrounternehmen Blitzschutz Reichenhauser.
 
-Baustelle: {folder_name}
-Adresse: {straße}, {plz} {ort}
+Baustelle: {{folder_name}}
+Adresse: {{straße}}, {{plz}} {{ort}}
 
-Ein Vorarbeiter hat folgenden Auftrag eingesprochen:
-"{transkript}"
+Ein Vorarbeiter hat folgenden Auftrag per Spracheingabe erfasst:
+"{{transkript}}"
 
-Extrahiere alle erkennbaren Informationen als JSON. Felder die nicht erkennbar sind, weglassen.
+Extrahiere alle erkennbaren Informationen als JSON.
+Felder die nicht erkennbar sind, WEGLASSEN (nicht null setzen).
+Antworte NUR mit validem JSON, ohne Markdown-Codeblock:
 
-Antworte NUR mit validem JSON (kein Markdown, keine Erklärung):
 {
   "betreff": "...",
   "gebäudeteil": "...",
-  "terminNachVereinbarung": true/false,
-  "isPlanVorhanden": true/false,
+  "terminNachVereinbarung": true,
+  "isPlanVorhanden": false,
   "ansprechpartnerAuftraggeber": "...",
   "telefonAnsprechpartner": "...",
   "ansprechpartnerVorOrt": "...",
   "notiz": "...",
-  "dringlichkeit": true/false,
-  "leiterNotwendig": true/false,
+  "dringlichkeit": false,
+  "leiterNotwendig": true,
   "zutritt": "..."
 }
 ```
@@ -183,36 +202,34 @@ Antworte NUR mit validem JSON (kein Markdown, keine Erklärung):
 
 ### Empfehlung: `speaches`
 
-- **Repo:** https://github.com/speaches-ai/speaches
-- OpenAI-kompatible API (`POST /v1/audio/transcriptions`)
-- Powered by `faster-whisper` (CTranslate2 — optimiert für CPU)
-- Drop-in Ersatz für OpenAI Whisper API → **kein Code-Umbau** nötig
-- Docker-deploybar, interner Port (nicht nach außen exponiert)
+| | Details |
+|--|---------|
+| Repo | https://github.com/speaches-ai/speaches |
+| API | OpenAI-kompatibel: `POST /v1/audio/transcriptions` |
+| Backend | `faster-whisper` (CTranslate2) |
+| Deployment | Docker Compose, interner Port |
+| Drop-in | ✅ Kein Code-Umbau wenn später wieder OpenAI API genutzt wird |
 
-### Server-Hardware (VPS)
+### Server (VPS)
 
 ```
 CPU:  AMD EPYC™ 9645 — 8 dedizierte Kerne
 RAM:  16 GB DDR5 ECC
-SSD:  1024 GB
 GPU:  keine → CPU-Inference
 ```
 
-### Modell-Empfehlung
+### Modell-Empfehlung: `large-v3-turbo`
 
-Mit 8 EPYC-Kernen ist **`large-v3`** oder **`turbo` (large-v3-turbo)** machbar:
-
-| Modell | Größe | Qualität Deutsch | CPU-Zeit (60s Audio) |
-|--------|-------|-----------------|----------------------|
-| `base` | 145 MB | ausreichend | ~3-5s |
+| Modell | Größe | Qualität DE | CPU-Zeit (60s Audio) |
+|--------|-------|-------------|----------------------|
 | `small` | 461 MB | gut | ~8-15s |
 | `medium` | 1.5 GB | sehr gut | ~20-40s |
 | `large-v3` | 3 GB | exzellent | ~60-90s |
-| `large-v3-turbo` | 1.6 GB | exzellent | ~30-50s |
+| **`large-v3-turbo`** | **1.6 GB** | **exzellent** | **~30-50s** ← empfohlen |
 
-**Empfehlung: `large-v3-turbo`** — beste Balance aus Qualität (Fachbegriffe, Dialekt) und Geschwindigkeit auf CPU.
+→ Beste Balance aus Qualität (Fachbegriffe, österreichischer Dialekt) und Geschwindigkeit auf CPU.
 
-### Docker Compose (Entwurf)
+### Docker Compose
 
 ```yaml
 services:
@@ -221,7 +238,7 @@ services:
     container_name: transcription
     restart: unless-stopped
     ports:
-      - "127.0.0.1:9000:8000"  # nur lokal erreichbar
+      - "127.0.0.1:9000:8000"   # nur lokal erreichbar, kein Public-Exposure
     environment:
       - DEFAULT_MODEL=Systran/faster-whisper-large-v3-turbo
       - DEFAULT_LANGUAGE=de
@@ -236,20 +253,7 @@ volumes:
   speaches_models:
 ```
 
----
-
-## Maximale Aufnahmelänge
-
-**Entscheidung: 2 Minuten (120s)**
-
-| Länge | Dateigröße (WebM/Opus ~32kbps) | Transkription (large-v3-turbo, CPU) |
-|-------|-------------------------------|--------------------------------------|
-| 30s   | ~120 KB                       | ~15-25s                              |
-| 60s   | ~240 KB                       | ~25-40s                              |
-| 120s  | ~480 KB                       | ~50-80s                              |
-
-- Frontend: Auto-stop + visueller Timer nach 120s
-- Backend: Reject bei > 5 MB Dateigröße
+Erster Start lädt das Modell (~1.6 GB) herunter und cached es im Volume.
 
 ---
 
@@ -257,20 +261,20 @@ volumes:
 
 ```sql
 CREATE TABLE IF NOT EXISTS voice_requests (
-  id                    INT AUTO_INCREMENT PRIMARY KEY,
-  construction_site_id  INT NOT NULL,
-  employee_id           INT NULL,
-  employee_name         VARCHAR(255) NULL,
-  transcript            TEXT NULL,
-  extracted_data        JSON NULL,
-  betreff               VARCHAR(255) NULL,
+  id                      INT AUTO_INCREMENT PRIMARY KEY,
+  construction_site_id    INT NOT NULL,
+  employee_id             INT NULL,
+  employee_name           VARCHAR(255) NULL,
+  transcript              TEXT NULL,           -- Whisper-Output, sichtbar im Back-Office
+  extracted_data          JSON NULL,           -- vollständiges LLM-Output
+  betreff                 VARCHAR(255) NULL,
   ansprechpartner_vor_ort VARCHAR(255) NULL,
-  notizen               TEXT NULL,
-  predefined_url        TEXT NOT NULL,
-  done                  TINYINT(1) DEFAULT 0,
-  created_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  done_at               TIMESTAMP NULL,
+  notizen                 TEXT NULL,
+  predefined_url          TEXT NOT NULL,
+  done                    TINYINT(1) DEFAULT 0,
+  created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  done_at                 TIMESTAMP NULL,
 
   INDEX idx_done (done),
   INDEX idx_construction_site_id (construction_site_id),
@@ -283,20 +287,65 @@ CREATE TABLE IF NOT EXISTS voice_requests (
 
 ---
 
-## Offene Fragen
+## Maximale Aufnahmelänge
 
-- [ ] Welche Tabelle heißt `construction_sites` in der DB? (Ggf. Schema checken)
-- [ ] Soll der eingeloggte User als `employee` gemapped werden (wie bei Phone Requests)?
-- [ ] Welches LLM soll für die Extraktion verwendet werden — GPT-4o-mini oder ein lokales Modell?
-- [ ] Soll das Transkript auch im Back-Office sichtbar sein (für Debugging)?
+**Entscheidung: 2 Minuten (120s)**
+
+| Länge | Dateigröße (WebM/Opus ~32 kbps) | Transkription (large-v3-turbo, CPU) |
+|-------|---------------------------------|--------------------------------------|
+| 30s | ~120 KB | ~15-25s |
+| 60s | ~240 KB | ~25-40s |
+| **120s** | **~480 KB** | **~50-80s** |
+
+- Frontend: Timer + auto-stop nach 120s
+- Backend: Reject bei `audio.size > 5_000_000`
+
+---
+
+## Neue Dateien (Implementierung)
+
+```
+src/
+├── api/
+│   ├── controllers/
+│   │   └── voiceRequestController.ts    (neu)
+│   ├── routes/
+│   │   └── voiceRequestRoutes.ts        (neu)
+│   └── models/
+│       └── VoiceRequest.ts              (neu, Interface)
+└── services/
+    ├── voiceRequestService.ts           (neu, analog phoneRequestService)
+    └── transcriptionService.ts          (neu, Whisper API Client)
+```
+
+**Änderungen bestehender Dateien:**
+- `src/server.ts` → neue Route einbinden
+- `src/services/msFormsService.ts` → keine Änderung nötig (buildMSFormsUrl bleibt)
+- `src/config/database.ts` → Migration für `voice_requests`-Tabelle
+
+---
+
+## Entscheidungslog
+
+| Frage | Entscheidung |
+|-------|-------------|
+| Max-Aufnahmelänge | **2 Minuten** |
+| Audio-Format | **WebM/Opus** (Browser-Default) |
+| UX nach Aufnahme | **✅ Häkchen** — keine Vorschau, Auswertung im Back-Office |
+| Transkription | **self-hosted speaches** (`large-v3-turbo`) |
+| LLM Extraktion | **GPT-4o-mini** (oder claude-haiku) |
+| Employee-Mapping | **Ja** — eingeloggter User wird als `employee_id` gespeichert |
+| Transkript im Back-Office | **Ja** — sichtbar für Debugging |
+| Server | VPS: AMD EPYC 8 Kerne, 16 GB RAM, kein GPU |
 
 ---
 
 ## Nächste Schritte
 
-- [ ] speaches Docker-Setup auf VPS testen
-- [ ] DB-Migration schreiben (`voice_requests`-Tabelle)
-- [ ] `voiceRequestService.ts` implementieren (analog zu `phoneRequestService.ts`)
-- [ ] Backend-Endpoint `POST /api/voice-requests`
-- [ ] Frontend Mikrofon-UI + Häkchen-Feedback
+- [ ] speaches auf VPS deployen & testen (Docker Compose)
+- [ ] DB-Migration (`voice_requests`-Tabelle)
+- [ ] `transcriptionService.ts` implementieren
+- [ ] `voiceRequestService.ts` implementieren
+- [ ] Backend-Endpoint `POST /api/v1/voice-requests`
+- [ ] Frontend: Mikrofon-Button + Recording-UI + Häkchen-Feedback
 - [ ] End-to-End Test mit echtem Audio
