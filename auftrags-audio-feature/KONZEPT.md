@@ -257,6 +257,45 @@ Erster Start lädt das Modell (~1.6 GB) herunter und cached es im Volume.
 
 ---
 
+## Back-Office: Audio-Player
+
+**Anforderung:** Das gespeicherte Audio soll im Back-Office abspielbar sein — ähnlich dem vapi.ai Recording-Player (Waveform-Visualisierung + Play-Button).
+
+### Was gespeichert wird
+- Das Audio-File (WebM/Opus) wird **serverseitig gespeichert** (z.B. im Dateisystem oder S3/Object Storage)
+- In der DB: `audio_path` oder `audio_url` als Referenz
+
+### Back-Office UI (Referenz: vapi.ai Screenshot)
+```
+┌─────────────────────────────────────────────────┐
+│  🎙️ Voice Request #42                           │
+│  Baustelle: Troststraße 50, 1100 Wien           │
+│  Vorarbeiter: Max Mustermann  │  13.04.2026     │
+├─────────────────────────────────────────────────┤
+│  ▶  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  2:00  │  ← Waveform-Player
+├─────────────────────────────────────────────────┤
+│  📝 Transkript:                                  │
+│  "Neue Erdung im Keller, Plan ist vorhanden..." │
+├─────────────────────────────────────────────────┤
+│  [🔗 MS Forms öffnen]           [✅ Erledigt]   │
+└─────────────────────────────────────────────────┘
+```
+
+### Technische Umsetzung
+- **Waveform:** [wavesurfer.js](https://wavesurfer.xyz/) — leichtgewichtig, kein Backend nötig, rendert WebM/Opus direkt im Browser
+- **Audio-Storage:** Audio-File serverseitig unter `/uploads/voice-requests/{id}.webm` speichern
+- **Audio-Endpoint:** `GET /api/v1/voice-requests/:id/audio` → streamt das File (mit Auth)
+- Das Back-Office lädt die Audio-URL und wavesurfer.js rendert die Waveform + Player on-the-fly
+
+### Backend-Ergänzung
+```typescript
+// Zusätzlicher Endpoint
+GET /api/v1/voice-requests/:id/audio
+→ res.sendFile(audioPath)  // mit Auth-Check
+```
+
+---
+
 ## Neue DB-Tabelle: `voice_requests`
 
 ```sql
@@ -265,6 +304,7 @@ CREATE TABLE IF NOT EXISTS voice_requests (
   construction_site_id    INT NOT NULL,
   employee_id             INT NULL,
   employee_name           VARCHAR(255) NULL,
+  audio_path              VARCHAR(500) NULL,   -- Pfad zur gespeicherten Audio-Datei
   transcript              TEXT NULL,           -- Whisper-Output, sichtbar im Back-Office
   extracted_data          JSON NULL,           -- vollständiges LLM-Output
   betreff                 VARCHAR(255) NULL,
@@ -336,6 +376,7 @@ src/
 | LLM Extraktion | **GPT-4o-mini** (oder claude-haiku) |
 | Employee-Mapping | **Ja** — eingeloggter User wird als `employee_id` gespeichert |
 | Transkript im Back-Office | **Ja** — sichtbar für Debugging |
+| Audio im Back-Office | **Ja** — Waveform-Player (wavesurfer.js), Audio serverseitig gespeichert |
 | Server | VPS: AMD EPYC 8 Kerne, 16 GB RAM, kein GPU |
 
 ---
@@ -343,9 +384,11 @@ src/
 ## Nächste Schritte
 
 - [ ] speaches auf VPS deployen & testen (Docker Compose)
-- [ ] DB-Migration (`voice_requests`-Tabelle)
+- [ ] DB-Migration (`voice_requests`-Tabelle, inkl. `audio_path`)
 - [ ] `transcriptionService.ts` implementieren
-- [ ] `voiceRequestService.ts` implementieren
+- [ ] `voiceRequestService.ts` implementieren (inkl. Audio-File speichern)
 - [ ] Backend-Endpoint `POST /api/v1/voice-requests`
+- [ ] Backend-Endpoint `GET /api/v1/voice-requests/:id/audio`
 - [ ] Frontend: Mikrofon-Button + Recording-UI + Häkchen-Feedback
+- [ ] Back-Office: wavesurfer.js Audio-Player + Transkript-Anzeige
 - [ ] End-to-End Test mit echtem Audio
