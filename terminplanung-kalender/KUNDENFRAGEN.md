@@ -10,47 +10,21 @@ für die Umsetzung der Terminplanung und Kalenderansicht im Dashboard haben wir 
 
 ---
 
-## Monteure & Zuweisung
-
-**1. Monteur-Zuweisung künftig nur noch über Termine?**
-
-Aktuell wird ein Monteur direkt einer Baustelle zugewiesen (unabhängig von Terminen). Soll das so bleiben, oder soll die Zuweisung künftig ausschließlich über die Termin-Eintragung laufen?
-
-> Beispiel: Baustelle hat Termin am 3. Juli → bei diesem Termin wird Monteur Hans eingetragen. Keine separate „fester Monteur"-Zuweisung mehr auf der Baustelle.
-
----
-
-## Termine ohne fixes Datum
-
-**2. Wie sollen „offene" Termine gehandhabt werden?**
-
-Aktuell können Termine als Freitext eingetragen werden (z.B. „Termin August" oder „noch offen"). Im neuen Kalender können solche Texte nicht automatisch verarbeitet werden.
-
-Unser Vorschlag: Beim Anlegen eines Termins gibt es zwei Optionen:
-- **Fixer Termin** → Datum + Uhrzeit
-- **Offener Termin** → Auswahl aus vordefinierten Werten (z.B. „Juli 2026", „August 2026", „Q3 2026", „Noch offen")
-
-Offene Termine würden dann im Kalender als grauer Hinweisblock am jeweiligen Monatsanfang erscheinen.
-
-Ist das so in Ordnung, oder gibt es andere Anforderungen für offene Termine?
-
----
-
 ## Kalenderansicht
 
-**3. Soll ein Termin im Kalender anklickbar sein, um direkt zur Baustelle zu springen?**
+**1. Soll ein Termin im Kalender anklickbar sein, um direkt zur Baustelle zu springen?**
 
 Wenn man im Kalender auf einen Termin klickt – soll man direkt zur zugehörigen Baustelle weitergeleitet werden?
 
 ---
 
-**4. Wird der Kalender hauptsächlich am Desktop genutzt, oder auch auf Tablet/Handy?**
+**2. Wird der Kalender hauptsächlich am Desktop genutzt, oder auch auf Tablet/Handy?**
 
 ---
 
 ## Verfügbarkeitsplanung (wichtigste Frage)
 
-**5. Was ist die häufigste Frage, die ihr beim Einplanen eines neuen Termins stellt?**
+**3. Was ist die häufigste Frage, die ihr beim Einplanen eines neuen Termins stellt?**
 
 Unsere Annahme: „Wer von den Monteuren hat an dem Tag noch Zeit?"
 
@@ -60,9 +34,9 @@ Ist das der Hauptanwendungsfall – oder gibt es andere Szenarien, die wir berü
 
 ---
 
-## Mehrtages-Einsätze
+## Einsatzdauer
 
-**6. Können Monteure auch über mehrere Tage auf einer Baustelle sein?**
+**4. Können Monteure auch über mehrere Tage auf einer Baustelle eingeplant sein?**
 
 Oder ist jeder Termin immer ein Einsatz innerhalb eines Tages?
 
@@ -70,7 +44,7 @@ Oder ist jeder Termin immer ein Einsatz innerhalb eines Tages?
 
 ## Benachrichtigungen
 
-**7. Soll ein Monteur informiert werden, wenn er einem Termin zugewiesen wird?**
+**5. Soll ein Monteur informiert werden, wenn er einem Termin zugewiesen wird?**
 
 Falls ja: per E-Mail, SMS, oder über eine andere App?
 
