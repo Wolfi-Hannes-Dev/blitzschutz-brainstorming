@@ -23,7 +23,8 @@ Erweiterung des bestehenden Toggl-Export-Systems um einen manuellen Admin-Button
 | 1.3 | DB-Schreibung + Power Automate Trigger | 3h | 69€ | 207€ |
 | 1.4 | Fehlerbehandlung (ungültiger Token, keine Einträge, API-Fehler) | 2h | 69€ | 138€ |
 | 1.5 | Frontend: Arbeiter-Dropdown + Datepicker + Button + Status-Feedback | 7h | 69€ | 483€ |
-| **Zwischensumme Phase 1** | | **19h** | | **1.311€** |
+| 1.6 | Excel-Script anpassen: mehrere Einträge pro Export verarbeiten (statt nur 1 Tageseintrag) | 3h | 69€ | 207€ |
+| **Zwischensumme Phase 1** | | **22h** | | **1.518€** |
 
 ---
 
@@ -42,18 +43,15 @@ Erweiterung des bestehenden Toggl-Export-Systems um einen manuellen Admin-Button
 
 | Phase | Aufwand | Betrag netto |
 |-------|---------|--------------|
-| Phase 1 — MVP | 19h | **1.311€** |
+| Phase 1 — MVP | 22h | **1.518€** |
 | Phase 2 — Robustheit | 5h | **345€** |
-| **Gesamt** | **24h** | **1.656€** |
+| **Gesamt** | **27h** | **1.863€** |
 
 *Alle Preise exkl. 20% MwSt.*
 
 ---
 
 ## Hinweise & Risiken
-
-**⚠️ Excel-Script Kompatibilität (nicht im Scope):**  
-Das bestehende Power Automate / Excel-Script ist auf einzelne Tageseinträge ausgelegt. Bei manuellen Exporten über mehrere Tage/Wochen können mehrere Einträge gleichzeitig übergeben werden. Es sollte geprüft werden ob das Script das korrekt verarbeitet — andernfalls ist eine Anpassung des Scripts separat zu beauftragen.
 
 **ℹ️ Toggl Free Tier:**  
 Kein zentraler Admin-Zugriff möglich. Das System verwendet weiterhin die individuellen API-Tokens der Arbeiter. Wenn ein Arbeiter seinen Token erneuert, muss er manuell in der DB aktualisiert werden.

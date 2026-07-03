@@ -30,8 +30,9 @@
 | E1-4 | Daten in DB schreiben (gleiche Struktur wie nächtlicher Export) | 2h |
 | E1-5 | Power Automate Flow triggern (gleicher Webhook wie nächtlicher Export) | 1h |
 | E1-6 | Fehlerbehandlung: ungültiger Token, keine Einträge, Toggl-Fehler → sinnvolle Fehlermeldung ans Frontend | 2h |
+| E1-7 | Excel-Script anpassen: Mehrere Einträge pro Übergabe verarbeiten (Loop statt Single-Entry-Logik) | 3h |
 
-**Summe Epic 1: ~12h**
+**Summe Epic 1: ~15h**
 
 ---
 
@@ -64,7 +65,7 @@
 
 ### Phase 1 — MVP (Empfehlung)
 Epic 1 + Epic 2
-→ **~19h** | Ergebnis: Funktionierender Admin-Button, End-to-End
+→ **~22h** | Ergebnis: Funktionierender Admin-Button, End-to-End
 
 ### Phase 2 — Qualität
 Epic 3
@@ -76,7 +77,7 @@ Epic 3
 
 - **Free Tier Toggl:** API-Zugriff auf eigene Einträge ist möglich, aber Rate-Limit (1 req/sec) muss beachtet werden. Bei Zeiträumen > 1 Woche mit vielen Einträgen kann der Export mehrere Sekunden dauern.
 - **Tokens in DB:** Wenn ein Arbeiter seinen Toggl-Account löscht oder Token erneuert, veraltet der Token. → Kein automatischer Sync möglich (Free Tier). Admin muss Token manuell aktualisieren.
-- **Power Automate / Excel-Script:** Das bestehende Script ist auf 1 Eintrag ausgelegt. Bei manuellen Exporten mit mehreren Einträgen (z.B. ganze Woche) muss geprüft werden ob das Script das korrekt verarbeitet. → Nicht Teil dieses Backlogs, aber wichtiger Hinweis.
+- **Power Automate / Excel-Script:** Das bestehende Script ist auf 1 Eintrag ausgelegt. Anpassung für mehrere Einträge pro Export ist in Epic 1 (E1-7) inkludiert.
 
 ---
 
