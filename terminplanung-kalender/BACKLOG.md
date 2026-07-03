@@ -68,7 +68,7 @@
 
 | ID | Story | Aufwand |
 |----|-------|---------|
-| E4-1 | react-big-calendar Integration (Wochen-/Monatsansicht, Open Source, kostenlos) | 3h |
+| E4-1 | vue-cal Integration (Wochen-/Monatsansicht, Open Source, kostenlos) | 3h |
 | E4-2 | Termine darstellen: Farbcodierung nach Monteur | 2h |
 | E4-3 | Filter: Monteure ein-/ausblenden (Checkboxen) | 2h |
 | E4-4 | Offene Termine (fuzzy) als Hinweis-Block am Monatsanfang darstellen | 2h |

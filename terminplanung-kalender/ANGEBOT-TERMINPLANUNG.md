@@ -48,7 +48,7 @@ Strukturierte Terminplanung im Dashboard: Tatjana kann pro Baustelle Termine erf
 
 | Pos. | Leistung | Stunden | Satz | Betrag |
 |------|----------|---------|------|--------|
-| 2.1 | Kalender-Integration (react-big-calendar, kostenlos): Wochen-/Monatsansicht, Farbcodierung nach Monteur | 5h | 69€ | 345€ |
+| 2.1 | Kalender-Integration (vue-cal, kostenlos): Wochen-/Monatsansicht, Farbcodierung nach Monteur | 5h | 69€ | 345€ |
 | 2.2 | Filter: Monteure ein-/ausblenden | 2h | 69€ | 138€ |
 | 2.3 | Offene Termine (fuzzy) als Hinweis-Block im Kalender | 2h | 69€ | 138€ |
 
@@ -80,7 +80,7 @@ Strukturierte Terminplanung im Dashboard: Tatjana kann pro Baustelle Termine erf
 ## Hinweise
 
 **Kalender-Bibliothek:**  
-Die Verfügbarkeitsansicht (Phase 1) wird als eigenes React-Grid umgesetzt — keine externe Bibliothek nötig. Für den klassischen Kalender in Phase 2 verwenden wir **react-big-calendar** (Open Source, kostenlos). Keine Lizenzkosten.
+Die Verfügbarkeitsansicht (Phase 1) wird als eigenes React-Grid umgesetzt — keine externe Bibliothek nötig. Für den klassischen Kalender in Phase 2 verwenden wir **vue-cal** (Open Source, kostenlos). Keine Lizenzkosten.
 
 **WhatsApp Business API:**  
 Die API ist bereits im Projekt eingerichtet. Laufende Kosten: WhatsApp-Benachrichtigungen (Utility Templates) kosten ca. 0,05–0,08€ pro Nachricht. Bei 10 Monteuren und durchschnittlich 2–3 Benachrichtigungen/Tag: ~15–25€/Monat.
