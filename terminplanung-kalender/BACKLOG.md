@@ -1,17 +1,38 @@
 # Backlog: Terminplanung & Kalender
 **Projekt:** Blitzschutz Reichenhauser  
-**Stand:** 2026-07-03  
-**Basis:** Fragebogen + Kundenantworten
+**Stand:** 2026-07-03 (finales Konzept nach Kundenantworten + Abstimmung)
 
 ---
 
-## Architektur-Entscheidungen (aus Kundenantworten)
+## Finales Konzept
 
-- **Keine Stundengenauigkeit nötig:** Tatjana plant auf Tages-Ebene ("Monteur A ist am Montag auf Baustelle XY") — keine Start/End-Zeit zwingend erforderlich für Verfügbarkeitsview
-- **Desktop first**, Tablet/Mobile später (kein Responsive-Fokus im MVP)
-- **Kein Klick zur Baustelle** aus dem Kalender im MVP (nur relevant wenn Monteure selbst den Kalender sehen — aktuell kein Monteur-Login geplant)
-- **Benachrichtigungen via WhatsApp** (WhatsApp Business API bereits im Projekt vorhanden)
-- **Mehrtages-Einsätze:** Tatjana trägt nur Fixtermine ein wenn sie Bescheid bekommt — kein automatisches Spanning nötig, jeder Termin ist ein einzelner Tag oder ein explizit eingetragener Zeitraum
+**Dashboard-eigener Kalender** (vue-cal, kostenlos) — keine Abhängigkeit von Google/Outlook.
+
+Wenn ein Termin im Dashboard erstellt wird → landet sofort im Kalender. Keine manuelle Doppeleingabe. Die .ics bleibt als optionaler Download erhalten.
+
+### Kalender-Features:
+- **Gesamtansicht:** Alle Monteure gleichzeitig, jeder in seiner Farbe — "wer ist wo"
+- **Filter:** Monteure per Checkbox abwählbar (Gesamtansicht bereinigen)
+- **Einzelansicht:** Einen Monteur auswählen → nur seine Termine → freie Tage sofort erkennbar
+- **Österreichische Feiertage** automatisch markiert (vue-cal AT-Plugin, kein Mehraufwand)
+- **Offene Termine** (fuzzy: "Juli 2026", "TBD") als Hinweis-Block am Monatsanfang
+- Navigation: Wochen-/Monatsansicht, vor/zurück blättern
+- Desktop first (Tablet/Mobile: spätere Phase)
+
+### Termin-Erfassung (unverändert):
+- Pro Baustelle: fixer Termin (Datum) oder offener Termin (Dropdown)
+- Mehrtages-Option (von/bis)
+- Ein oder mehrere Monteure zuweisen
+- Nur BO kann Termine erstellen/bearbeiten/löschen
+
+### Benachrichtigungen:
+- Monteur bekommt WhatsApp wenn er einem Termin zugewiesen wird
+- Monteur bekommt WhatsApp wenn neue Notiz bei seiner Baustelle erscheint
+
+### Kalender-Sync (Phase 3, optional):
+- "In Google Calendar exportieren" Button
+- Einmaliger OAuth-Consent → neue Termine landen automatisch extern
+- Nicht im aktuellen Scope
 
 ---
 
@@ -23,71 +44,52 @@
 
 | ID | Story | Aufwand |
 |----|-------|---------|
-| E1-1 | DB-Schema: `appointments` Tabelle (constructionSiteId, date, notes, fuzzyLabel, isMultiDay, endDate) | 2h |
-| E1-2 | DB-Schema: `appointment_employees` JOIN-Tabelle (appointmentId, employeeId) | 1h |
-| E1-3 | Migration: bestehende Monteur-Zuweisung pro Baustelle prüfen + ggf. in neues Schema überführen | 2h |
+| E1-1 | DB-Schema: `appointments` (constructionSiteId, date, endDate, notes, fuzzyLabel, isMultiDay) | 2h |
+| E1-2 | DB-Schema: `appointment_employees` JOIN-Tabelle | 1h |
+| E1-3 | Migration: bestehende Monteur-Zuweisung pro Baustelle prüfen + überführen | 2h |
 
 **Summe Epic 1: ~5h**
 
 ---
 
-### 🟢 EPIC 2 — Termin-Erfassung (Backend + Frontend)
+### 🟢 EPIC 2 — Termin-Erfassung
 
 | ID | Story | Aufwand |
 |----|-------|---------|
-| E2-1 | BE: CRUD-Endpoints für Termine (create, update, delete, list by constructionSite) | 4h |
-| E2-2 | BE: Monteur-Zuweisung zu Termin (ein oder mehrere) | 2h |
-| E2-3 | FE: "Neuer Termin" Button auf Baustellendetailseite | 1h |
-| E2-4 | FE: Termintyp wählen — Fixer Termin (Datum) oder Offener Termin (Dropdown: "Juli 2026", "August 2026", "Q3 2026", "TBD", ...) | 3h |
-| E2-5 | FE: Monteur(e) auswählen (Multi-Select aus 8 Mitarbeitern) | 2h |
-| E2-6 | FE: Mehrtages-Option (von/bis Datum) | 2h |
-| E2-7 | FE: Termin bearbeiten + löschen (nur BO) | 2h |
+| E2-1 | BE: CRUD-Endpoints für Termine + Monteur-Zuweisung | 4h |
+| E2-2 | FE: "Neuer Termin" Dialog (Typ, Datum/Fuzzy, Mehrtages, Monteur-Auswahl) | 5h |
+| E2-3 | FE: Termine auf Baustellendetailseite anzeigen, bearbeiten, löschen | 2h |
 
-**Summe Epic 2: ~16h**
+**Summe Epic 2: ~11h**
 
 ---
 
-### 🟢 EPIC 3 — Verfügbarkeitsansicht (Prio-1-Use-Case)
-
-> „Wer hat nächste Woche Zeit?" — Alle 8 Monteure nebeneinander, belegte Tage sofort sichtbar.
+### 🟢 EPIC 3 — Dashboard-Kalender
 
 | ID | Story | Aufwand |
 |----|-------|---------|
 | E3-1 | BE: Endpoint — alle Termine im Zeitraum, gruppiert nach Mitarbeiter | 3h |
-| E3-2 | FE: Ressourcen-Grid (Monteure = Spalten, Tage = Zeilen) für wählbaren Zeitraum (Standard: nächste 7 Tage) | 5h |
-| E3-3 | FE: Belegte Tage farblich markiert (je Baustelle ein Block mit Baustellenname), freie Tage leer | 3h |
-| E3-4 | FE: Zeitraum-Navigation (vor/zurück Woche, Monatssprung) | 2h |
+| E3-2 | vue-cal Integration: Wochen-/Monatsansicht, Navigation | 3h |
+| E3-3 | Farbcodierung: jeder Monteur = eigene Farbe, Legende | 2h |
+| E3-4 | Gesamtansicht: alle Monteure + Filter (Checkboxen zum Abwählen) | 3h |
+| E3-5 | Einzelansicht: Monteur auswählen → nur seine Termine sichtbar | 2h |
+| E3-6 | Österreichische Feiertage einbinden (vue-cal AT-Plugin) | 0.5h |
+| E3-7 | Offene Termine (fuzzy) als Hinweis-Block am Monatsanfang | 2h |
 
-**Summe Epic 3: ~13h**
-
----
-
-### 🟡 EPIC 4 — Kalenderansicht (Sekundär)
-
-> Klassischer Kalender mit allen Terminen aller Monteure.
-
-| ID | Story | Aufwand |
-|----|-------|---------|
-| E4-1 | vue-cal Integration (Wochen-/Monatsansicht, Open Source, kostenlos) | 3h |
-| E4-2 | Termine darstellen: Farbcodierung nach Monteur | 2h |
-| E4-3 | Filter: Monteure ein-/ausblenden (Checkboxen) | 2h |
-| E4-4 | Offene Termine (fuzzy) als Hinweis-Block am Monatsanfang darstellen | 2h |
-
-**Summe Epic 4: ~9h**  
+**Summe Epic 3: ~15.5h**
 
 ---
 
-### 🔔 EPIC 5 — WhatsApp-Benachrichtigungen
+### 🔔 EPIC 4 — WhatsApp-Benachrichtigungen
 
 | ID | Story | Aufwand |
 |----|-------|---------|
-| E5-1 | BE: Benachrichtigung senden wenn Monteur einem Termin zugewiesen wird (WhatsApp via bestehende Business API) | 3h |
-| E5-2 | BE: Benachrichtigung senden wenn neue Info/Notiz bei einer Baustelle hinzugefügt wird (nur für zugewiesene Monteure) | 2h |
-| E5-3 | WhatsApp Template erstellen + genehmigen lassen (Meta): "Du wurdest für [Baustelle] am [Datum] eingeplant." | 1h |
-| E5-4 | WhatsApp Template erstellen + genehmigen lassen: "Neue Info bei Baustelle [X]: [Notiz]" | 1h |
-| E5-5 | DB: Monteur-Profil um WhatsApp-Nummer erweitern | 1h |
+| E4-1 | BE: Benachrichtigung bei Termin-Zuweisung (WhatsApp Business API) | 3h |
+| E4-2 | BE: Benachrichtigung bei neuer Baustellen-Notiz (nur zugewiesene Monteure) | 2h |
+| E4-3 | WhatsApp Templates erstellen + Meta-Genehmigung (2 Templates) | 1h |
+| E4-4 | DB: Monteur-Profil um WhatsApp-Nummer erweitern | 1h |
 
-**Summe Epic 5: ~8h**
+**Summe Epic 4: ~7h**
 
 ---
 
@@ -95,19 +97,22 @@
 
 ### Phase 1 — MVP
 Epic 1 + Epic 2 + Epic 3
-→ **~34h** | Ergebnis: Termin-Erfassung funktioniert + Tatjana sieht auf einen Blick wer wann verfügbar ist
+→ **~31.5h** | Ergebnis: Termin-Erfassung + Kalender mit Filter- und Einzelansicht, Feiertage
 
-### Phase 2 — Vollständig
-Epic 4 + Epic 5
-→ **+17h** | Ergebnis: Klassischer Kalender + WhatsApp-Benachrichtigungen für Monteure
+### Phase 2 — Benachrichtigungen
+Epic 4
+→ **+7h** | Ergebnis: Monteure werden automatisch per WhatsApp informiert
+
+### Phase 3 — Google Calendar Sync (optional, auf Anfrage)
+→ Separates Angebot bei Bedarf
 
 ---
 
 ## Bewusst nicht im Scope
-
-- Kalender-Sync mit Google Calendar / Outlook (Zukunft)
-- Monteur-Login / Monteur-Kalenderansicht (Zukunft)
-- Konflikt-Warnung bei Doppelbelegung (Tatjana entscheidet selbst)
+- Google/Outlook Kalender-Sync (Phase 3, optional)
+- Monteur-Login / Monteur-eigene Kalenderansicht
+- Konflikt-Warnung bei Doppelbelegung
+- Kostenpflichtige Kalender-Bibliotheken
 
 ---
 
