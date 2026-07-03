@@ -96,8 +96,22 @@ Automatisierung des Angebots-Prozesses: Kundenanfragen per E-Mail werden automat
 
 - Szenario 3 (Einreichplan-Kalkulation) — Fachkalkulation bleibt manuell
 - Szenario 6 (Vergleichsangebote) — nicht automatisierbar
-- Laufende KI-Kosten (OpenAI/Azure) — verbrauchsabhängig, ca. 0,01–0,05€/Mail
 - Laufende Wartung/Hosting nach Übergabe
+
+---
+
+## Laufende Drittanbieter-Kosten (geschätzt, nicht in Projektpreis inkludiert)
+
+Diese Kosten fallen direkt beim jeweiligen Anbieter an und sind verbrauchsabhängig:
+
+| Dienst | Zweck | Kosten pro Einheit | Schätzung/Monat |
+|--------|-------|-------------------|------------------|
+| **Microsoft Graph API** | E-Mail-Trigger, Draft-Erstellung | kostenlos | 0€ |
+| **OpenAI GPT-4o mini** | Klassifizierung, Texterkennung | ~0,001–0,002€/Mail | ~1–3€ |
+| **Google Maps Static API** | Objektfoto für Erstprüfungen (Phase 3) | ~0,002€/Screenshot | <1€ |
+| **Gesamt (geschätzt)** | | | **~2–5€/Monat** |
+
+*Basis: ~50 Anfragen/Monat. Microsoft Graph API ist kostenfrei im Rahmen des bestehenden Microsoft 365 Abonnements.*
 
 ---
 
