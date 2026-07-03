@@ -68,13 +68,12 @@
 
 | ID | Story | Aufwand |
 |----|-------|---------|
-| E4-1 | FullCalendar.io Integration (Wochen-/Monatsansicht) | 3h |
+| E4-1 | react-big-calendar Integration (Wochen-/Monatsansicht, Open Source, kostenlos) | 3h |
 | E4-2 | Termine darstellen: Farbcodierung nach Monteur | 2h |
 | E4-3 | Filter: Monteure ein-/ausblenden (Checkboxen) | 2h |
 | E4-4 | Offene Termine (fuzzy) als Hinweis-Block am Monatsanfang darstellen | 2h |
 
 **Summe Epic 4: ~9h**  
-*Hinweis: FullCalendar Resource View (für Mehrspalten-Ansicht) benötigt kostenpflichtige Lizenz ~400 USD/Jahr. Für die Verfügbarkeitsansicht in Epic 3 bauen wir ein eigenes einfaches Grid — keine Lizenz nötig.*
 
 ---
 
@@ -109,7 +108,6 @@ Epic 4 + Epic 5
 - Kalender-Sync mit Google Calendar / Outlook (Zukunft)
 - Monteur-Login / Monteur-Kalenderansicht (Zukunft)
 - Konflikt-Warnung bei Doppelbelegung (Tatjana entscheidet selbst)
-- FullCalendar Resource View Lizenz (eigenes Grid reicht für Verfügbarkeitsansicht)
 
 ---
 
