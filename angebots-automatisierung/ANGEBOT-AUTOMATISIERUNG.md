@@ -1,8 +1,26 @@
+> # ⚠️ ÜBERHOLT — NICHT MEHR VERWENDEN
+>
+> **Ersetzt durch:** [`VARIANTEN-UEBERSICHT.md`](./VARIANTEN-UEBERSICHT.md) (Stand Juli 2026)
+>
+> Dieses Dokument schätzt den Vollausbau auf **76 h / 5.244 €**. Die Detailschätzung nach
+> Prototyp und Architektur-Durchsprache kommt für denselben Funktionsumfang auf
+> **315–516 h / 21.700–35.600 €** — Faktor 4–6.
+>
+> Die alte Schätzung unterschätzt vor allem das Cockpit (Editor, Freigabe-Flows,
+> Stammdaten-UIs), den Historie-Import und die Angebots-Engine. Sie ist als
+> Kalkulationsgrundlage unbrauchbar.
+>
+> **Aufbewahrt nur zur Nachvollziehbarkeit.** Falls dieses Angebot je an den Kunden
+> gegangen ist, muss die Abweichung vor der Beauftragung aktiv angesprochen werden.
+
+---
+
 # Angebot: Angebots-Automatisierung
 **Für:** Blitzschutz Reichenhauser  
 **Von:** [Firmenname]  
 **Datum:** 2026-07-03  
-**Angebotsnummer:** 2026-XXX
+**Angebotsnummer:** 2026-XXX  
+**Status:** ⚠️ überholt — siehe Banner oben
 
 ---
 
