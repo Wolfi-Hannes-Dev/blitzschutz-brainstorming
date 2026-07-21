@@ -1,5 +1,24 @@
 # Roadmap: Blitzschutz Reichenhauser — Dashboard Ausbau
-**Stand:** 2026-07-21 — v2, Angebots-Tool aktualisiert (Varianten + Prototyp)
+**Stand:** 2026-07-21 — v2 + Code-Analyse
+
+> ## ⚠️ Die Zahlen unten sind durch eine Code-Analyse überholt
+>
+> Am 2026-07-21 wurden alle vier Topics gegen den tatsächlichen Bestandscode geprüft.
+> Ergebnis: **114–180 h statt 71 h** für Topics 1–3 plus ein bisher nicht kalkuliertes Fundament.
+> Details, Positionen und Belege: [`aufwandsschaetzung-4-topics.xlsx`](./aufwandsschaetzung-4-topics.xlsx)
+>
+> | Topic | Angebot v2 | Nach Code-Analyse | Befund |
+> |---|---|---|---|
+> | 0 · Fundament | — | 18–30 h | **neu** — FE erreicht die Live-Middleware nicht (401), kein App-Shell, kein Schreibpfad |
+> | 1 · RBAC | 23 h | 29–43 h (A) / 48–73 h (B) | BE hat keine Identität — ein Shared Secret für alle |
+> | 2 · Toggl | 21 h | 19–29 h | ✅ bestätigt |
+> | 3 · Terminplanung | 27 h | 48–78 h | keine `appointments`-Tabelle vorhanden |
+>
+> **Wichtigste Einzelkorrektur:** Das Frontend ist **nicht Nuxt**, sondern eine Vite-/Vue-SPA
+> mit ~1.807 Zeilen, 2 Seiten, ohne Komponentenbibliothek und ohne einen einzigen
+> Schreibpfad zur API. Mehrere Angebotstexte gehen von einem anderen Projekt aus.
+>
+> Erstellt von Claude, nicht von Wolfi — vor Kundenkontakt gegenprüfen.
 
 **Änderungen 2026-07-21:**
 - Angebots-Tool: aus „Schätzung offen" werden 3 durchgerechnete Varianten (MVP / Kern / Vollausbau)
