@@ -1,37 +1,38 @@
 # Roadmap: Blitzschutz Reichenhauser — Dashboard Ausbau
 **Stand:** 2026-07-21 — v2 + Code-Analyse
 
-> ## ⚠️ Die Zahlen unten sind durch eine Code-Analyse überholt
+> ## Code-Analyse 2026-07-21 — Zahlen aktualisiert
 >
-> Am 2026-07-21 wurden alle vier Topics gegen den tatsächlichen Bestandscode geprüft.
-> Ergebnis: **114–180 h statt 71 h** für Topics 1–3 plus ein bisher nicht kalkuliertes Fundament.
-> Details, Positionen und Belege: [`aufwandsschaetzung-4-topics.xlsx`](./aufwandsschaetzung-4-topics.xlsx)
+> Alle vier Topics wurden gegen den tatsächlichen Bestandscode geprüft (Middleware `05336ac`,
+> Frontend `f11dd3f` vom 10.05.2026).
+> Ergebnis: **94–148 h statt 71 h** für Topics 1–3 plus ein Fundament.
+> Positionen und Belege: [`aufwandsschaetzung-4-topics.xlsx`](./aufwandsschaetzung-4-topics.xlsx)
 >
 > | Topic | Angebot v2 | Nach Code-Analyse | Befund |
 > |---|---|---|---|
-> | 0 · Fundament | — | 18–30 h | **neu** — FE erreicht die Live-Middleware nicht (401), kein App-Shell, kein Schreibpfad |
-> | 1 · RBAC | 23 h | 29–43 h (A) / 48–73 h (B) | BE hat keine Identität — ein Shared Secret für alle |
-> | 2 · Toggl | 21 h | 19–29 h | ✅ bestätigt |
-> | 3 · Terminplanung | 27 h | 48–78 h | keine `appointments`-Tabelle vorhanden |
+> | 0 · Fundament | — | 7–12 h | Layout für neue Seiten, Toast-/Validierungs-Konvention |
+> | 1 · RBAC | 23 h | 24–36 h (A) / 43–66 h (B) | BE hat keine Identität — ein Shared Secret für alle |
+> | 2 · Toggl | 21 h | 18–28 h | ✅ bestätigt |
+> | 3 · Terminplanung | 27 h | 45–72 h | keine `appointments`-Tabelle vorhanden |
 >
-> ### ⚠️ Zurückgezogen: alle Frontend-Aussagen
+> **Der Treiber ist die Terminplanung, nicht das Frontend.** Es gibt keine `appointments`-Tabelle
+> — nur drei freie Textspalten (`VARCHAR`) auf `projects`, ohne Index. Ein `UNIQUE KEY` auf
+> `construction_site_employees` verhindert zudem, dass ein Monteur einer Baustelle mehrfach
+> zugewiesen wird; für einen Kalender muss der auf Live-Daten fallen.
 >
-> Die Frontend-Analyse lief gegen `Malaika1985/blitzschutz_frontend` — **das ist nicht das
-> Live-System.** Produktiv läuft das Docker-Image `szeminator/blitzschutz-frontend:main`
-> (`/opt/blitzschutz-frontend-live/docker-compose.yml`), dessen Quellcode nicht vorlag.
+> **Bei RBAC ist die Lücke im Backend, nicht im Frontend.** Die Middleware kennt keine Identität:
+> ein gemeinsames Shared Secret für alle Aufrufer, kein `req.user`. Route Guards mit
+> Rollenprüfung existieren im Frontend bereits (`meta.requiresAdmin`), gespeist aus zwei
+> hardcodierten E-Mail-Listen in `config.ts:34-40`.
+> Variante A = RBAC bleibt Anzeige-Logik · Variante B = serverseitig durchgesetzt (+19–30 h).
 >
-> Belegt durch: Die Middleware hat `PUT /api/v1/construction-sites/:id`
-> (`constructionSiteRoutes.ts:323`) und das Live-Frontend hat einen Edit-Button, der ihn
-> aufruft. Das analysierte Repo enthält in seiner **gesamten Historie** keinen einzigen
-> `PUT` — es kann das Live-System nicht sein.
+> ### Korrekturhinweis
 >
-> **Damit ungeprüft: 69–111 h** (Plan ~90 h) der oben genannten Erhöhung. Betroffen sind
-> das komplette Fundament, die FE-Positionen bei RBAC und Kalender sowie das Toggl-Formular.
-> Im Excel sind alle betroffenen Zeilen mit ⚠ markiert.
->
-> **Weiterhin belastbar** (reine Backend-Befunde, unabhängig vom Frontend):
-> keine `appointments`-Tabelle · `UNIQUE KEY` blockiert Mehrfachtermine ·
-> kein Identitätsbegriff im Backend · Toggl-Bestätigung inkl. Timeout-/Pagination-Lücke.
+> Eine erste Fassung dieser Analyse nannte 114–180 h. Sie lief gegen einen 8 Monate alten
+> Checkout desselben Frontend-Repos und war deutlich zu pessimistisch: Auth-Anbindung,
+> Schreibpfad zur API, Rollen-Guards, ein Formular-Muster (`ProjectEditModal.vue`) und eine
+> Monteur-Zuweisungs-UI (`EmployeeAssignment.vue`) existieren alle bereits. Die Zahlen oben
+> sind die korrigierte Fassung.
 >
 > Erstellt von Claude, nicht von Wolfi — vor Kundenkontakt gegenprüfen.
 
