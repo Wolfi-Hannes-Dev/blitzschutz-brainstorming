@@ -14,9 +14,24 @@
 > | 2 · Toggl | 21 h | 19–29 h | ✅ bestätigt |
 > | 3 · Terminplanung | 27 h | 48–78 h | keine `appointments`-Tabelle vorhanden |
 >
-> **Wichtigste Einzelkorrektur:** Das Frontend ist **nicht Nuxt**, sondern eine Vite-/Vue-SPA
-> mit ~1.807 Zeilen, 2 Seiten, ohne Komponentenbibliothek und ohne einen einzigen
-> Schreibpfad zur API. Mehrere Angebotstexte gehen von einem anderen Projekt aus.
+> ### ⚠️ Zurückgezogen: alle Frontend-Aussagen
+>
+> Die Frontend-Analyse lief gegen `Malaika1985/blitzschutz_frontend` — **das ist nicht das
+> Live-System.** Produktiv läuft das Docker-Image `szeminator/blitzschutz-frontend:main`
+> (`/opt/blitzschutz-frontend-live/docker-compose.yml`), dessen Quellcode nicht vorlag.
+>
+> Belegt durch: Die Middleware hat `PUT /api/v1/construction-sites/:id`
+> (`constructionSiteRoutes.ts:323`) und das Live-Frontend hat einen Edit-Button, der ihn
+> aufruft. Das analysierte Repo enthält in seiner **gesamten Historie** keinen einzigen
+> `PUT` — es kann das Live-System nicht sein.
+>
+> **Damit ungeprüft: 69–111 h** (Plan ~90 h) der oben genannten Erhöhung. Betroffen sind
+> das komplette Fundament, die FE-Positionen bei RBAC und Kalender sowie das Toggl-Formular.
+> Im Excel sind alle betroffenen Zeilen mit ⚠ markiert.
+>
+> **Weiterhin belastbar** (reine Backend-Befunde, unabhängig vom Frontend):
+> keine `appointments`-Tabelle · `UNIQUE KEY` blockiert Mehrfachtermine ·
+> kein Identitätsbegriff im Backend · Toggl-Bestätigung inkl. Timeout-/Pagination-Lücke.
 >
 > Erstellt von Claude, nicht von Wolfi — vor Kundenkontakt gegenprüfen.
 
