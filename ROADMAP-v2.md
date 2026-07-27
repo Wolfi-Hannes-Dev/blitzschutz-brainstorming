@@ -31,6 +31,19 @@
 > hardcodierten E-Mail-Listen in `config.ts:34-40`.
 > Variante A = RBAC bleibt Anzeige-Logik · Variante B = serverseitig durchgesetzt (+19–30 h).
 >
+> ### ✅ Entscheidung 2026-07-27: Variante A (Variante B als Technical Debt)
+>
+> Gewählt: **Variante A.** Rollen- und „nur eigene Daten"-Trennung laufen in der Anzeige,
+> nicht serverseitig erzwungen. Bewusst als **Technical Debt** aufgeschoben.
+>
+> **Was damit offen bleibt:** (1) „nur eigene Daten" ist reine Anzeige-Logik; (2) Admin-/
+> Rollen-Sperren sind UI-only, nicht serverseitig durchgesetzt; (3) das `VITE_API_TOKEN` ist
+> für alle gleich und aus dem Browser-Bundle auslesbar.
+>
+> **Fällig spätestens, wenn:** heikle Daten dazukommen · ein nicht vertrauenswürdiger Nutzer
+> Zugang hat · eine Rolle (z. B. Zeichner) etwas wirklich *nicht auslösen können* darf statt
+> es nur nicht zu sehen. Nachrüsten = Variante B (+19–30 h, ggf. mehr bei mehr Endpunkten).
+>
 > ### Korrekturhinweis
 >
 > Eine erste Fassung dieser Analyse nannte 114–180 h. Sie lief gegen einen 8 Monate alten

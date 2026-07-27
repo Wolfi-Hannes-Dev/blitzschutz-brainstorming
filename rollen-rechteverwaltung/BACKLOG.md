@@ -99,4 +99,22 @@ Epic 4
 
 ---
 
-*Erstellt von Wolfi, 2026-07-03*
+## ⚠️ Technical Debt — Entscheidung 2026-07-27: Variante A
+
+Nach Code-Analyse: Das Backend hat **keine Nutzer-Identität** — die gesamte Auth ist ein Shared Secret (`VITE_API_TOKEN`), für alle Aufrufer gleich, aus dem Browser-Bundle auslesbar. RBAC läuft daher **nur im Frontend** (Anzeige-Logik), nicht serverseitig erzwungen.
+
+**Bewusst gewählt (Variante A). Als Technical Debt aufgeschoben ist Variante B:**
+- BE: MSAL-Token serverseitig validieren (JWKS, Tenant, Cache)
+- BE: Identität in die Request-Pipeline (`req.user`)
+- BE: ~30 Bestandsrouten auf identitätsbasierte Auth umstellen
+- FE: MSAL-Token mitsenden statt Shared Secret
+- Azure: API-Scope registrieren
+- **Aufwand bei Nachrüstung: +19–30 h** (ggf. mehr, je mehr Endpunkte bis dahin existieren)
+
+**Konsequenz bis dahin:** „Nur eigene Daten" und Admin-/Rollen-Sperren sind Anzeige-Logik, keine echte Sperre. Wer das Bundle-Token kennt, kann jeden Endpunkt aufrufen und die Daten jedes Mitarbeiters abfragen.
+
+**Auslöser zum Abbau:** heikle Daten · nicht vertrauenswürdiger Nutzer · eine Rolle muss etwas wirklich *verhindern* statt nur *verbergen*.
+
+---
+
+*Erstellt von Wolfi, 2026-07-03 · Technical-Debt-Vermerk ergänzt 2026-07-27*
