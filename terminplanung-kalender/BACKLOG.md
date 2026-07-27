@@ -108,7 +108,11 @@ Jeder Mitarbeiter bekommt eine eigene Kalenderansicht mit seinen Terminen. Wird 
 
 **Summe Epic 5: ~8–14h** (Reuse von Epic 1/3 — kein zweiter Kalenderbau)
 
-**Offene Frage:** Zeigt der Kalender nur Termine, denen der Monteur per `appointment_employees` zugewiesen ist, oder alle Termine seiner zugewiesenen Projekte? Ersteres ist angenommen — klären.
+**Geklärt 2026-07-27:** Der Monteur sieht **nur seine eigenen** Termine. Der BO weist ihn einem datierten Termin zu (`appointment_employees`); dieser Termin gehört zu Projekt A und erscheint mit dessen Infos im Kalender. „Projekt zugewiesen → erscheint" und „nur eigene" sind damit dasselbe Modell.
+
+**Was angezeigt wird, ist frei definierbar** (Projekt, Adresse, Datum/ganztägig, Notiz, Status, Link) — per `SELECT`/Join festgelegt. Feldliste vor Umsetzung vereinbaren. Vorlage: bestehender ICS-Export (`ConstructionSiteList.vue:462`).
+
+**Sicherheit:** MS-Login gilt nur im Browser; an die Middleware geht ein statisches `VITE_API_TOKEN` (für alle identisch). Unter RBAC-Variante A ist „nur eigene" reine Anzeige-Logik — technisch erzwungen erst mit Variante B (siehe RBAC-Backlog).
 
 ---
 
