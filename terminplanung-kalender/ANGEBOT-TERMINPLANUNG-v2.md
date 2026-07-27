@@ -64,18 +64,41 @@ Erweiterung der bestehenden Terminerfassung: Monteure werden Terminen zugewiesen
 
 ---
 
+### Phase 3 — Mitarbeiter-Kalenderansicht
+
+*Ergänzung 2026-07-27. Jeder Mitarbeiter erhält eine eigene Kalenderansicht mit seinen Terminen. Wird er einem Projekt zugewiesen, erscheint das Projekt automatisch in seinem Kalender. Umsetzung wie beim Admin-Kalender mit calendar.js — die Kalender-Komponente aus Phase 1 wird im Einzel-Modus wiederverwendet.*
+
+| Pos. | Leistung | Stunden | Satz | Betrag |
+|------|----------|---------|------|--------|
+| 3.1 | BE: Endpoint — Termine eines Mitarbeiters im Zeitraum | 2h | 69€ | 138€ |
+| 3.2 | FE: Route + Ansicht „Mein Kalender" (nur für angemeldeten Monteur) | 3h | 69€ | 207€ |
+| 3.3 | FE: Kalender-Komponente im Einzel-Modus wiederverwenden | 3h | 69€ | 207€ |
+| 3.4 | FE: Zugewiesenes Projekt am Termin + Sprung zur Baustelle | 2h | 69€ | 138€ |
+| 3.5 | FE: Einstieg aus „Meine Baustellen" + Leerzustand | 2h | 69€ | 138€ |
+
+| **Zwischensumme Phase 3** | | **12h** | | **828€** |
+
+*Setzt Phase 1 voraus (Datenmodell + Kalender-Komponente). Stunden aus der Code-Analyse vom 2026-07-27.*
+
+---
+
 ## Gesamtübersicht
 
 | Phase | Aufwand | Betrag netto |
 |-------|---------|--------------|
 | Phase 1 — Erweiterung + Kalender | 21h | **1.449€** |
 | Phase 2 — WhatsApp-Benachrichtigungen | 6h | **414€** |
-| **Gesamt** | **27h** | **1.863€** |
+| Phase 3 — Mitarbeiter-Kalenderansicht | 12h | **828€** |
+| **Gesamt** | **39h** | **2.691€** |
 
 *Alle Preise exkl. 20% MwSt.*
 
 **Laufende Kosten:** WhatsApp ~15–25€/Monat (bei 10 Monteuren, Ø 2–3 Nachrichten/Tag)
 
+> **Hinweis (intern, 2026-07-27):** Die Stunden für Phase 1 + 2 stammen aus Angebot v2 (Wolfi).
+> Die interne Code-Analyse veranschlagt allein Phase 1 deutlich höher (Datenmodell + Kalender);
+> siehe `aufwandsschaetzung-4-topics.xlsx`. Vor Kundenkontakt abgleichen.
+
 ---
 
-*Angebot gültig bis: 2026-08-03 | Erstellt von Wolfi, 2026-07-03*
+*Angebot gültig bis: 2026-08-03 | Erstellt von Wolfi, 2026-07-03 · Phase 3 ergänzt 2026-07-27*

@@ -1,11 +1,11 @@
 # Roadmap: Blitzschutz Reichenhauser — Dashboard Ausbau
-**Stand:** 2026-07-21 — v2 + Code-Analyse
+**Stand:** 2026-07-27 — v2 + Code-Analyse (Terminplanung um Mitarbeiter-Kalender erweitert)
 
-> ## Code-Analyse 2026-07-21 — Zahlen aktualisiert
+> ## Code-Analyse — Zahlen aktualisiert (Stand 2026-07-27)
 >
 > Alle vier Topics wurden gegen den tatsächlichen Bestandscode geprüft (Middleware `05336ac`,
 > Frontend `f11dd3f` vom 10.05.2026).
-> Ergebnis: **94–148 h statt 71 h** für Topics 1–3 plus ein Fundament.
+> Ergebnis: **102–162 h statt 71 h** für Topics 1–3 plus ein Fundament.
 > Positionen und Belege: [`aufwandsschaetzung-4-topics.xlsx`](./aufwandsschaetzung-4-topics.xlsx)
 >
 > | Topic | Angebot v2 | Nach Code-Analyse | Befund |
@@ -13,7 +13,12 @@
 > | 0 · Fundament | — | 7–12 h | Layout für neue Seiten, Toast-/Validierungs-Konvention |
 > | 1 · RBAC | 23 h | 24–36 h (A) / 43–66 h (B) | BE hat keine Identität — ein Shared Secret für alle |
 > | 2 · Toggl | 21 h | 18–28 h | ✅ bestätigt |
-> | 3 · Terminplanung | 27 h | 45–72 h | keine `appointments`-Tabelle vorhanden |
+> | 3 · Terminplanung + Mitarbeiter-Kalender | 27 h | 53–86 h | keine `appointments`-Tabelle; Mitarbeiter-Kalender = Phase 3 (Reuse) |
+>
+> **Neu 2026-07-27 — Mitarbeiter-Kalenderansicht (Phase 3, +8–14 h).** Jeder Mitarbeiter bekommt
+> eine eigene Kalenderansicht mit seinen Terminen; wird er einem Projekt zugewiesen, erscheint es
+> dort automatisch. Umsetzung wie beim Admin-Kalender mit **calendar.js** — die Komponente aus
+> Phase 1 wird im Einzel-Modus wiederverwendet, kein zweiter Kalenderbau. Setzt Phase 1 zwingend voraus.
 >
 > **Der Treiber ist die Terminplanung, nicht das Frontend.** Es gibt keine `appointments`-Tabelle
 > — nur drei freie Textspalten (`VARCHAR`) auf `projects`, ohne Index. Ein `UNIQUE KEY` auf

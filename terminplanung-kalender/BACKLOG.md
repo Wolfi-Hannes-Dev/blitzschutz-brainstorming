@@ -93,27 +93,51 @@ Wenn ein Termin im Dashboard erstellt wird → landet sofort im Kalender. Keine 
 
 ---
 
+### 🗓️ EPIC 5 — Mitarbeiter-Kalenderansicht *(neu 2026-07-27)*
+
+Jeder Mitarbeiter bekommt eine eigene Kalenderansicht mit seinen Terminen. Wird er einem Projekt zugewiesen, erscheint das Projekt automatisch in seinem Kalender. Umsetzung wie beim Admin-Kalender mit **calendar.js** — die Kalender-Komponente aus Epic 3 wird im Einzel-Modus wiederverwendet.
+
+| ID | Story | Aufwand |
+|----|-------|---------|
+| E5-1 | BE: Endpoint — Termine eines Mitarbeiters im Zeitraum (gefilterte Variante von E3-1) | 1–2h |
+| E5-2 | FE: Route + Ansicht „Mein Kalender" (Guard `requiresEmployee`) | 2–3h |
+| E5-3 | FE: Admin-Kalenderkomponente (calendar.js) im Einzel-Modus wiederverwenden | 2–4h |
+| E5-4 | FE: Zugewiesenes Projekt am Termin anzeigen + Sprung zur Baustelle | 1–2h |
+| E5-5 | FE: Einstieg aus „Meine Baustellen" (EmployeeView) + Leerzustand | 1–2h |
+| E5-6 | Test mit echten Zuweisungsdaten | ~1h |
+
+**Summe Epic 5: ~8–14h** (Reuse von Epic 1/3 — kein zweiter Kalenderbau)
+
+**Offene Frage:** Zeigt der Kalender nur Termine, denen der Monteur per `appointment_employees` zugewiesen ist, oder alle Termine seiner zugewiesenen Projekte? Ersteres ist angenommen — klären.
+
+---
+
 ## Phasen-Planung
 
 ### Phase 1 — MVP
 Epic 1 + Epic 2 + Epic 3
-→ **~31.5h** | Ergebnis: Termin-Erfassung + Kalender mit Filter- und Einzelansicht, Feiertage
+→ **~31.5h** | Ergebnis: Termin-Erfassung + Admin-Kalender mit Filter- und Einzelansicht, Feiertage
 
 ### Phase 2 — Benachrichtigungen
 Epic 4
 → **+7h** | Ergebnis: Monteure werden automatisch per WhatsApp informiert
 
-### Phase 3 — Google Calendar Sync (optional, auf Anfrage)
+### Phase 3 — Mitarbeiter-Kalenderansicht *(neu)*
+Epic 5
+→ **+8–14h** | Ergebnis: Jeder Monteur sieht seine Termine im eigenen Kalender. Setzt Phase 1 voraus.
+
+### Phase 4 — Google Calendar Sync (optional, auf Anfrage)
 → Separates Angebot bei Bedarf
 
 ---
 
 ## Bewusst nicht im Scope
-- Google/Outlook Kalender-Sync (Phase 3, optional)
-- Monteur-Login / Monteur-eigene Kalenderansicht
+- Google/Outlook Kalender-Sync (Phase 4, optional)
 - Konflikt-Warnung bei Doppelbelegung
 - Kostenpflichtige Kalender-Bibliotheken
 
+> *Scope-Änderung 2026-07-27: „Monteur-eigene Kalenderansicht" war ursprünglich nicht im Scope und ist jetzt als Epic 5 / Phase 3 beauftragt.*
+
 ---
 
-*Erstellt von Wolfi, 2026-07-03*
+*Erstellt von Wolfi, 2026-07-03 · Epic 5 ergänzt 2026-07-27*
